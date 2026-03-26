@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bidhan Password Generator Pro</title>
+    <meta name="description" content="Developed by Bidhan.">
+    <meta name="author" content="Bidhan">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --accent-fire: #ff4500;
+            --gold: #ffcc00;
+            --text-color: #fff;
+            --box-bg: rgba(0, 0, 0, 0.5);
+        }
+
+        .light-theme {
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(0, 0, 0, 0.1);
+            --text-color: #1a1a1a;
+            --box-bg: rgba(255, 255, 255, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; font-weight: 900; }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: var(--text-color); 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background 0.4s;
+        }
+
+        .water-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: url('https://images.unsplash.com/photo-1544652478-6653e09f18a2?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; background-position: center;
+        }
+
+        /* Responsive Notification Popup */
+        #ios-toast {
+            position: fixed; top: -150px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 350px; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(25px);
+            border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); z-index: 10000;
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); border: 1px solid rgba(255, 255, 255, 0.1); opacity: 0;
+        }
+        #ios-toast.show { top: 20px; opacity: 1; }
+
+        .header { background-color: #000; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent-fire); z-index: 10; }
+        .header-logo { font-size: 22px; color: var(--accent-fire); text-transform: uppercase; letter-spacing: 2px; }
+        
+        .banner-wrapper { width: 100%; height: 60px; background: #000; display: flex; align-items: center; border-bottom: 2px solid var(--accent-fire); overflow: hidden; z-index: 10; }
+        .scrolling-msg { width: 100%; white-space: nowrap; animation: scroll-text 15s linear infinite; font-size: 16px; color: var(--gold); text-transform: uppercase; }
+        @keyframes scroll-text { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        
+        /* RESPONSIVE GRID SYSTEM */
+        .glass-card { 
+            width: 100%; max-width: 850px;
+            background: var(--card-bg); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border); border-radius: 30px; padding: 30px;
+            display: grid; grid-template-columns: 1fr; gap: 25px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .display-box { background: var(--box-bg); padding: 20px; border-radius: 15px; border: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        #passwordOutput { font-family: 'Courier New', monospace; font-size: 20px; color: #39ff14; word-break: break-all; }
+
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        label { font-size: 13px; text-transform: uppercase; opacity: 0.8; }
+        input[type="range"] { width: 55%; accent-color: var(--accent-fire); cursor: pointer; }
+        input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-fire); }
+
+        .gen-btn { padding: 18px; background: linear-gradient(90deg, #ff4500, #ff8c00); color: white; font-size: 18px; border: none; border-radius: 15px; cursor: pointer; text-transform: uppercase; transition: 0.3s; width: 100%; }
+        .copy-btn { background: transparent; color: var(--gold); border: 2px solid var(--gold); padding: 10px 15px; border-radius: 10px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+
+        .history-panel { background: rgba(0,0,0,0.2); border-radius: 15px; padding: 15px; border: 1px solid var(--card-border); }
+        .history-title { font-size: 11px; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; opacity: 0.7; }
+        .history-item { padding: 8px; border-radius: 8px; background: var(--box-bg); margin-bottom: 6px; font-family: monospace; font-size: 11px; display: flex; justify-content: space-between; }
+
+        .footer { text-align: center; padding: 20px; color: rgba(255,255,255,0.3); font-size: 11px; }
+        .control-panel { display: flex; gap: 8px; }
+        .toggle-mini { padding: 6px 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; cursor: pointer; font-size: 10px; text-transform: uppercase; }
+
+        /* DESKTOP OPTIMIZATION (PC) */
+        @media (min-width: 850px) {
+            .glass-card { grid-template-columns: 1.5fr 1fr; padding: 50px; }
+            .output-section { grid-column: span 2; }
+            #passwordOutput { font-size: 28px; }
+            #ios-toast { left: auto; right: 30px; transform: none; }
+            .header { padding: 25px 60px; }
+            .header-logo { font-size: 28px; }
+        }
+    </style>
+</head>
+<body id="mainBody">
+
+    <div class="water-bg"></div>
+
+    <div id="ios-toast">
+        <div style="font-size: 25px;">🔑</div>
+        <div>
+            <div style="color:#ff4500; font-size: 14px;">BIDHAN PRO</div>
+            <div style="color:#fff; font-size: 12px;">Ready. Use [G] Generate | [C] Copy</div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-logo">BIDHAN PRO</div>
+        <div class="control-panel">
+            <button class="toggle-mini" onclick="toggleTheme()" id="themeBtn">Light</button>
+            <button class="toggle-mini" onclick="toggleSound()" id="soundBtn">Sound: ON</button>
+        </div>
+    </div>
+
+    <div class="banner-wrapper">
+        <div class="scrolling-msg">🚀 BIDHAN PASSWORD GENERATOR PRO — DEVELOPED BY BIDHAN 🚀</div>
+    </div>
+
+    <div class="main-container">
+        <div class="glass-card">
+            
+            <div class="output-section">
+                <div class="display-box">
+                    <span id="passwordOutput">Ready...</span>
+                    <button class="copy-btn" id="copyBtn" onclick="copyPassword()">COPY</button>
+                </div>
+            </div>
+
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label>Length: <span id="lengthVal" style="color: var(--accent-fire);">16</span></label>
+                    <input type="range" id="length" min="8" max="50" value="16" oninput="updateLen()">
+                </div>
+                <div class="setting-item"><label>Uppercase</label><input type="checkbox" id="upper" checked></div>
+                <div class="setting-item"><label>Numbers</label><input type="checkbox" id="numbers" checked></div>
+                <div class="setting-item"><label>Symbols</label><input type="checkbox" id="symbols" checked></div>
+                <button class="gen-btn" onclick="generatePassword(true)">GENERATE PASS</button>
+            </div>
+
+            <div class="history-panel">
+                <div class="history-title">History (Last 3)</div>
+                <div id="history-list">
+                    <div class="history-item" style="opacity:0.5;">No history</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="footer">DEVELOPED BY <b>BIDHAN</b> | 2026</div>
+
+    <script>
+        let historyArr = [];
+        let isSoundOn = true;
+        const clickSound = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
+
+        function toggleSound() {
+            isSoundOn = !isSoundOn;
+            document.getElementById('soundBtn').innerText = isSoundOn ? "Sound: ON" : "Sound: OFF";
+        }
+
+        function toggleTheme() {
+            document.getElementById('mainBody').classList.toggle('light-theme');
+            document.getElementById('themeBtn').innerText = document.getElementById('mainBody').classList.contains('light-theme') ? "Dark" : "Light";
+        }
+
+        function playSound() { if(isSoundOn) { clickSound.currentTime = 0; clickSound.play(); } }
+
+        function updateLen() { document.getElementById('lengthVal').innerText = document.getElementById('length').value; }
+
+        function generatePassword(play) {
+            if(play) playSound();
+            const length = document.getElementById('length').value;
+            const hasUpper = document.getElementById('upper').checked;
+            const hasNumbers = document.getElementById('numbers').checked;
+            const hasSymbols = document.getElementById('symbols').checked;
+            const lower = "abcdefghijklmnopqrstuvwxyz", upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", num = "0123456789", sym = "!@#$%^&*()_+";
+            let charSet = lower;
+            if (hasUpper) charSet += upper;
+            if (hasNumbers) charSet += num;
+            if (hasSymbols) charSet += sym;
+            let password = "";
+            for (let i = 0; i < length; i++) password += charSet.charAt(Math.floor(Math.random() * charSet.length));
+            document.getElementById('passwordOutput').innerText = password;
+        }
+
+        function copyPassword() {
+            playSound();
+            const pass = document.getElementById('passwordOutput').innerText;
+            if (pass === "Ready...") return;
+            navigator.clipboard.writeText(pass).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.innerText = "COPIED!";
+                updateHistory(pass);
+                setTimeout(() => { btn.innerText = "COPY"; }, 2000);
+            });
+        }
+
+        function updateHistory(newPass) {
+            if (historyArr[0] === newPass) return;
+            historyArr.unshift(newPass);
+            if (historyArr.length > 3) historyArr.pop();
+            const list = document.getElementById('history-list');
+            list.innerHTML = "";
+            historyArr.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `<span>${item}</span><span style="color:var(--accent-fire)">#${index+1}</span>`;
+                list.appendChild(div);
+            });
+        }
+
+        // KEYBOARD SHORTCUTS LOGIC
+        window.addEventListener('keydown', (e) => {
+            // Check if key is 'g' (Generate)
+            if (e.key.toLowerCase() === 'g') {
+                generatePassword(true);
+            }
+            // Check if key is 'c' (Copy)
+            if (e.key.toLowerCase() === 'c') {
+                copyPassword();
+            }
+        });
+
+        window.onload = function() {
+            generatePassword(false);
+            setTimeout(() => { document.getElementById('ios-toast').classList.add('show'); }, 1000);
+            setTimeout(() => { document.getElementById('ios-toast').classList.remove('show'); }, 6000);
+        };
+    </script>
+</body>
+</html>
